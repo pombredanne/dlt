@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+
+import argparse
+import sys
+from dlt.tokenizer import Tokenizer
+from dlt.parser import Parser
+from dlt import utils
+
+
+class DLT(object):
+    """Debian License Tool invoker"""
+    def __init__(self, copyright_path):
+        self.tokenizer = Tokenizer()
+        self.parser = Parser()
+        self._fh_copyright = open(copyright_path)
+
+    def run(self):
+        paragraphs = self.tokenizer.get_paragraphs(self._fh_copyright)
+        if self.parser.process(paragraphs):
+            print("All fine, the copyright file is DEP5 compliant")
+        else:
+            self.parser.show_msg()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Debian License Tool')
+    parser.add_argument('path', type=str,
+                       help='path to debian/copyright file')
+    args = parser.parse_args()
+    path = utils.find_debian_copyright_file(args.path)
+
+    if path is None:
+        sys.exit("Can't access to the debian/copyright file")
+    app = DLT(path)
+    app.run()
