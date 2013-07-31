@@ -1,0 +1,4 @@
+* dlt query, allow find what license is associated to a specific file and which rule is applied.
+* Rule for coverage (File Paragraphs cover all files)
+* Add suggestions, the messages are prepared to receive a suggestion as
+  parameter but the suggestions were not written yet.
