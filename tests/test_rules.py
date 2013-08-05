@@ -64,7 +64,7 @@ class ParagraphTypeTest(RuleTest):
         paragraphs = self.get_paragraphs(invalid_file)
         rule = ParagraphType(paragraphs)
         self.assertFalse(rule.apply())
-        self.assertEqual(len(rule.messages), 1)
+        self.assertEqual(len(rule.messages), 2)
         msg = rule.messages[0]
         self.assertEqual(msg.line_number, 2)
         self.assertEqual(msg.position, 1)
@@ -89,6 +89,17 @@ class ParagraphTypeTest(RuleTest):
         self.assertEqual(msg.line_number, 2)
         self.assertEqual(msg.position, 1)
         self.assertEqual(msg.txt, "Incompatible Field Type")
+
+    def test_missed_copyright_field(self):
+        paragraphs = self.get_paragraphs(invalid_file)
+        rule = ParagraphType(paragraphs)
+        self.assertFalse(rule.apply())
+        self.assertEqual(len(rule.messages), 2)
+        msg = rule.messages[1]
+        self.assertEqual(msg.line_number, 2)
+        self.assertEqual(msg.position, 1)
+        self.assertEqual(msg.txt,
+                         "Missed field, you forgot the field Copyright")
 
 
 class CheckHasHeaderTest(RuleTest):

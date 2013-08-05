@@ -14,9 +14,9 @@
 import sys
 import operator
 from collections import OrderedDict
-from .scheme import FIELD_TYPES, PARAGRAPH_TYPES
-from .rules import get_all_rules
-from .config import log_level, log_color
+from dlt.scheme import FIELD_TYPES, PARAGRAPH_TYPES
+from dlt.rules import get_all_rules
+from dlt.config import log_level, log_color
 
 
 class Parser(object):
@@ -41,7 +41,7 @@ class Parser(object):
         msg = "{level}: {msg} in line {line}:{position}\n\n{context}\n{sug}"
         context = ""
         if message.context:
-            context = '{0}\n'.format(message.context)
+            context = '\t{0}'.format("\n\t".join(message.context.split("\n")))
         msg = msg.format(
             level=log_color[message.severity],
             msg=message.txt,

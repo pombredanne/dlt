@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
-from .render import field_to_text
-from .color import green
-from .scheme import PARAGRAPH_TYPES
-from .config import ERROR
+import abc
+from dlt.render import field_to_text, paragraph_to_text
+from dlt.color import green
+from dlt.scheme import PARAGRAPH_TYPES
+from dlt.config import ERROR
 
 
 def get_all_rules():
@@ -24,6 +25,8 @@ def get_all_rules():
 
 class Rule(object):
     """Base class for rules"""
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, data):
         self._msg = []
         self._context = None
@@ -48,6 +51,10 @@ class Rule(object):
         msg = self.Message(severity, line_number, position, msg, context,
                            suggestion)
         self._msg.append(msg)
+
+    @abc.abstractmethod
+    def apply(self):
+        """Apply the rule"""
 
 
 class FieldType(Rule):
@@ -93,7 +100,7 @@ class FieldType(Rule):
     def _get_context_invalid_type(self, field):
         position = 1
         indicator = green.format("_") + len(field.name) * green.format("~")
-        txt = u"{indicator}\n{field_render}"
+        txt = "{indicator}\n{field_render}"
         txt = txt.format(field_render=field_to_text(field),
                          indicator=indicator)
         return (txt, position)
@@ -107,7 +114,7 @@ class FieldType(Rule):
                     context, position = self._get_context_invalid_type(field)
                     self.add_msg(ERROR, field.line_number, position,
                                  "Invalid Field", context)
-                    success &= False
+                    success = False
                 else:
                     success &= self.type_checkers[field.type](field)
         return success
@@ -134,14 +141,28 @@ class ParagraphType(Rule):
         for field in paragraph:
             txt += "{0}\n".format(field_to_text(field))
             if field.name == wrong_field:
-                header = txt[:]
+                ctx = txt[:]
                 txt = ""
                 length = int(len(field.name))
                 line_number = field.line_number
-                indicator = green.format("^") + green.format("~") * length
-                context = "{header}{indicator}".format(header=header,
-                                                       indicator=indicator)
+                indicator = green.format("_") + green.format("~") * length
+                context = "{indicator}{ctx}".format(ctx=ctx,
+                                                    indicator=indicator)
         return "{0}\n{1}".format(context, txt), line_number, position
+
+    def _check_mandatory_fields(self, paragraph):
+        fields = {}
+        for field in paragraph:
+            fields[field.name] = True
+        missed_fields = set(PARAGRAPH_TYPES[paragraph.type]) - set(fields)
+        for missed_field in missed_fields:
+            if PARAGRAPH_TYPES[paragraph.type][missed_field]:
+                message = "Missed field, you forgot the field {0}"
+                self.add_msg(ERROR, paragraph[0].line_number, 1,
+                             message.format(missed_field),
+                             paragraph_to_text(paragraph))
+                return False
+        return True
 
     def _header_paragraph(self, paragraph):
         wrong_fields = (self.standalone | self.files) - self.header
@@ -171,9 +192,10 @@ class ParagraphType(Rule):
         success = True
         for paragraph in self._data:
             try:
-                success = self.type_checkers[paragraph.type](paragraph)
+                success &= self.type_checkers[paragraph.type](paragraph)
             except KeyError:
                 pass
+            success &= self._check_mandatory_fields(paragraph)
         return success
 
 

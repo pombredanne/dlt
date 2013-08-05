@@ -11,8 +11,8 @@ def field_to_text(field):
 def paragraph_to_text(paragraph):
     txt = ""
     for field in paragraph:
-        txt += '{0}\n'.format(field_to_text(field))
-    return txt[:-1]
+        txt += '{0}'.format(field_to_text(field))
+    return txt
 
 
 def paragraphs_to_text(data):

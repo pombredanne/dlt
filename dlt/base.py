@@ -34,9 +34,17 @@ class Paragraph(object):
     def __contains__(self, field_name):
         return any(field_name in field.name for field in self._fields)
 
-    def __getitem__(self, name):
-        for field in self:
-            if name == field.name.strip():
+    def __getitem__(self, value):
+        name = None
+        index = None
+        try:
+            index = int(value)
+        except ValueError:
+            name = value
+        for i, field in enumerate(self):
+            if name is not None and name == field.name.strip():
+                return field
+            elif index is not None and index == i:
                 return field
 
     def next(self):

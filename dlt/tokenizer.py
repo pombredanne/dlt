@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from .base import Field, Paragraph
+from dlt.base import Field, Paragraph
 
 
 class Tokenizer(object):
