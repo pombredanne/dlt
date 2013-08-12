@@ -2,22 +2,36 @@
 
 import argparse
 import sys
+import os
 from dlt.tokenizer import Tokenizer
 from dlt.parser import Parser
+from dlt.coverage import Coverage
 from dlt import utils
 
 
 class DLT(object):
     """Debian License Tool invoker"""
-    def __init__(self, copyright_path):
+    def __init__(self, copyright_path, query=None):
         self.tokenizer = Tokenizer()
         self.parser = Parser()
-        self._fh_copyright = open(copyright_path)
+        self._copyright_path = copyright_path
+        self._query = query
 
     def run(self):
-        paragraphs = self.tokenizer.get_paragraphs(self._fh_copyright)
+        paragraphs = self.tokenizer.get_paragraphs(open(self._copyright_path))
         if self.parser.process(paragraphs):
             print("All fine, the copyright file is DEP5 compliant")
+            dir = os.path.join(os.path.dirname(self._copyright_path),
+                               os.path.pardir)
+            coverage = Coverage(paragraphs, os.path.abspath(dir))
+            coverage.apply()
+            coverage.show_msg()
+            if self._query is not None:
+                paragraph = coverage.get_rule_associated(self._query)
+                if paragraph is not None:
+                    msg = '\n{copyright}{license}'
+                    print(msg.format(copyright=paragraph['Copyright'].content,
+                                     license=paragraph['License'].content))
         else:
             self.parser.show_msg()
 
@@ -26,10 +40,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Debian License Tool')
     parser.add_argument('path', type=str,
                        help='path to debian/copyright file')
+    parser.add_argument('--query', dest='query', action='store',
+                        help='filename ')
     args = parser.parse_args()
     path = utils.find_debian_copyright_file(args.path)
 
     if path is None:
         sys.exit("Can't access to the debian/copyright file")
-    app = DLT(path)
+    app = DLT(path, args.query)
     app.run()

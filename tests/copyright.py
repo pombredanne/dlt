@@ -59,12 +59,12 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 
 
 two_fp_without_header = """
-Files: foobar.foo
+Files: foobar.foo zaraza.bla
 Copyright: Foo Bar <foo@bar.com>
 License: Beerware
 
 
-Files: sara.sa
+Files: sara.sa ble*
 Copyright: Sara Sa <sara@sa.com>
 License: Vaporware
 

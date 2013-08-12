@@ -14,7 +14,8 @@
 import unittest
 from dlt.tokenizer import Tokenizer
 from dlt.parser import Parser
-from dlt.rules import FieldType, ParagraphType, CheckHasHeader, RepeatedFields
+from dlt.rules import (FieldType, ParagraphType, CheckHasHeader,
+                       RepeatedFields, FileParagraph)
 from copyright import (two_fp_with_invalid_field, invalid_single_line_values,
                        invalid_header, invalid_file, invalid_standalone,
                        two_headers, two_fp_without_header, header,
@@ -141,3 +142,14 @@ class RepeatedFieldsTest(RuleTest):
         self.assertEqual(msg.line_number, 3)
         self.assertEqual(msg.position, 1)
         self.assertEqual(msg.txt, "Field redefinition")
+
+
+class FileParagraphTest(RuleTest):
+    def test_patterns(self):
+        paragraphs = self.get_paragraphs(two_fp_without_header)
+        rule = FileParagraph(paragraphs)
+        self.assertTrue(rule.apply())
+        paragraph = paragraphs[0]
+        self.assertEqual(paragraph.patterns, ['foobar.foo', 'zaraza.bla'])
+        paragraph = paragraphs[1]
+        self.assertEqual(paragraph.patterns, ['sara.sa', 'ble*'])

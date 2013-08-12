@@ -21,7 +21,14 @@ def find_debian_copyright_file(deb_src_dir):
     deb_src_dir = normpath(abspath(expanduser(deb_src_dir)))
     paths_to_lookup = [join(deb_src_dir, "debian", "copyright"),
                        join(deb_src_dir, "copyright"),
-                       deb_src_dir,]
+                       deb_src_dir, ]
     for path in paths_to_lookup:
         if exists(path) and isfile(path):
             return path
+
+
+def get_by_type(paragraphs, type):
+    """Filter the paragraphs by type"""
+    for paragraph in paragraphs:
+        if paragraph.type == type:
+            yield paragraph

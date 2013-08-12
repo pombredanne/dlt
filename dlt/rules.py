@@ -17,10 +17,12 @@ from dlt.render import field_to_text, paragraph_to_text
 from dlt.color import green
 from dlt.scheme import PARAGRAPH_TYPES
 from dlt.config import ERROR
+from dlt import utils
 
 
 def get_all_rules():
-    return [FieldType, ParagraphType, CheckHasHeader, RepeatedFields]
+    return [FieldType, ParagraphType, CheckHasHeader, RepeatedFields,
+            FileParagraph]
 
 
 class Rule(object):
@@ -151,6 +153,8 @@ class ParagraphType(Rule):
         return "{0}\n{1}".format(context, txt), line_number, position
 
     def _check_mandatory_fields(self, paragraph):
+        if paragraph.type is None:
+            return False
         fields = {}
         for field in paragraph:
             fields[field.name] = True
@@ -265,3 +269,16 @@ class RepeatedFields(Rule):
                                  context)
                     success = False
         return success
+
+
+class FileParagraph(Rule):
+    def __init__(self, paragraphs):
+        super(FileParagraph, self).__init__(paragraphs)
+
+    def apply(self):
+        for paragraph in utils.get_by_type(self._data, "files"):
+            for patterns in paragraph["Files"]:
+                paragraph.patterns = []
+                for pattern in patterns.split():
+                    paragraph.patterns.append(pattern)
+        return True
