@@ -24,9 +24,10 @@ class DLT(object):
             dir = os.path.join(os.path.dirname(self._copyright_path),
                                os.path.pardir)
             coverage = Coverage(paragraphs, os.path.abspath(dir))
-            coverage.apply()
-            coverage.show_msg()
-            if self._query is not None:
+            coverage_isok = coverage.apply()
+            if not coverage_isok:
+                coverage.show_msg()
+            if coverage_isok and self._query is not None:
                 paragraph = coverage.get_rule_associated(self._query)
                 if paragraph is not None:
                     msg = '\n{copyright}{license}'
