@@ -7,34 +7,43 @@ from dlt.tokenizer import Tokenizer
 from dlt.parser import Parser
 from dlt.coverage import Coverage
 from dlt import utils
+from dlt.color import red, green
 
 
 class DLT(object):
     """Debian License Tool invoker"""
-    def __init__(self, copyright_path, query=None):
+    def __init__(self, copyright_path, query=None, verbose=False):
         self.tokenizer = Tokenizer()
         self.parser = Parser()
         self._copyright_path = copyright_path
         self._query = query
+        self._verbose = verbose
 
     def run(self):
         paragraphs = self.tokenizer.get_paragraphs(open(self._copyright_path))
         if self.parser.process(paragraphs):
-            print("All fine, the copyright file is DEP5 compliant")
+            msg = "All fine, the copyright file is DEP5 compliant"
+            print(green.format(msg))
             dir = os.path.join(os.path.dirname(self._copyright_path),
                                os.path.pardir)
             coverage = Coverage(paragraphs, os.path.abspath(dir))
             coverage_isok = coverage.apply()
-            if not coverage_isok:
+            if self._verbose and not coverage_isok:
                 coverage.show_msg()
+            elif not coverage_isok:
+                msg = "Some files are missing copyrights"
+                print(red.format(msg))
             if coverage_isok and self._query is not None:
                 paragraph = coverage.get_rule_associated(self._query)
                 if paragraph is not None:
                     msg = '\n{copyright}{license}'
                     print(msg.format(copyright=paragraph['Copyright'].content,
                                      license=paragraph['License'].content))
-        else:
+        elif self._verbose:
             self.parser.show_msg()
+        else:
+            msg = "The file contains errors or is not DEP5 compliant"
+            print(red.format(msg))
 
 
 if __name__ == "__main__":
@@ -42,11 +51,13 @@ if __name__ == "__main__":
     parser.add_argument('path', type=str,
                        help='path to debian/copyright file')
     parser.add_argument('--query', dest='query', action='store',
-                        help='filename ')
+                        help='filename that you want to know the license')
+    parser.add_argument('--verbose', dest='verbose', action='store_true',
+                        help='Verbose output')
     args = parser.parse_args()
     path = utils.find_debian_copyright_file(args.path)
 
     if path is None:
         sys.exit("Can't access to the debian/copyright file")
-    app = DLT(path, args.query)
+    app = DLT(path, query=args.query, verbose=args.verbose)
     app.run()

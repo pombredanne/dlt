@@ -21,7 +21,7 @@ from dlt import utils
 
 
 def get_all_rules():
-    return [FieldType, ParagraphType, CheckHasHeader, RepeatedFields,
+    return [CheckHasHeader, FieldType, ParagraphType, RepeatedFields,
             FileParagraph]
 
 
@@ -231,8 +231,9 @@ class CheckHasHeader(Rule):
             if paragraph.type == 'header':
                 header_paragraphs.append(paragraph)
         if len(header_paragraphs) == 0:
+            suggestion = "Are you sure that the copyright is DEP5 compliant"
             self.add_msg(ERROR, 1, 1,
-                         "You need define the header paragraph", "")
+                         "You need define the header paragraph", suggestion)
             return False
         elif len(header_paragraphs) > 1:
             context = self._get_context(header_paragraphs)
@@ -277,6 +278,8 @@ class FileParagraph(Rule):
 
     def apply(self):
         for paragraph in utils.get_by_type(self._data, "files"):
+            if paragraph is None:
+                break
             for patterns in paragraph["Files"]:
                 paragraph.patterns = []
                 for pattern in patterns.split():

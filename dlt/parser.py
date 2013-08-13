@@ -17,6 +17,7 @@ from collections import OrderedDict
 from dlt.scheme import FIELD_TYPES, PARAGRAPH_TYPES
 from dlt.rules import get_all_rules
 from dlt.config import log_level, log_color
+from dlt.color import blue
 
 
 class Parser(object):
@@ -28,20 +29,20 @@ class Parser(object):
 
     def process(self, paragraphs):
         """Parse a list of paragraphs"""
-        success = True
         self._guess_types(paragraphs)
         for rule in get_all_rules():
             rule_inst = rule(paragraphs)
-            if not rule_inst.apply():
-                success = False
             self._rules.append(rule_inst)
-        return success
+            if not rule_inst.apply():
+                return False
+        return True
 
     def _print_message(self, message):
         msg = "{level}: {msg} in line {line}:{position}\n\n{context}\n{sug}"
         context = ""
         if message.context:
             context = '\t{0}'.format("\n\t".join(message.context.split("\n")))
+            context = blue.format(context)
         msg = msg.format(
             level=log_color[message.severity],
             msg=message.txt,
