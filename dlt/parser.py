@@ -37,7 +37,7 @@ class Parser(object):
                 return False
         return True
 
-    def _print_message(self, message):
+    def _get_message(self, message):
         msg = "{level}: {msg} in line {line}:{position}\n\n{context}\n{sug}"
         context = ""
         if message.context:
@@ -51,14 +51,16 @@ class Parser(object):
             context=context,
             sug=message.suggestion,
         )
-        print(msg)
+        return msg
 
-    def show_msg(self):
+    def get_msg(self):
         """Show the messages of each rule"""
+        msg = ""
         for rule in self._rules:
             for message in rule.messages:
                 if message.severity >= log_level:
-                    self._print_message(message)
+                     msg += self._get_message(message)
+        return msg
 
     def _guess_types(self, paragraphs):
         for paragraph in paragraphs:

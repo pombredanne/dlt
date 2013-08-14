@@ -3,6 +3,7 @@
 import argparse
 import sys
 import os
+import errno
 from dlt.tokenizer import Tokenizer
 from dlt.parser import Parser
 from dlt.coverage import Coverage
@@ -19,11 +20,17 @@ class DLT(object):
         self._query = query
         self._verbose = verbose
 
+    def exit_with_error(self, msg, color=None):
+        if color is not None:
+            msg = color.format(msg)
+        sys.exit(msg)
+
     def run(self):
         paragraphs = self.tokenizer.get_paragraphs(open(self._copyright_path))
         if self.parser.process(paragraphs):
             msg = "All fine, the copyright file is DEP5 compliant"
-            print(green.format(msg))
+            if not self._query:
+                print(green.format(msg))
             dir = os.path.join(os.path.dirname(self._copyright_path),
                                os.path.pardir)
             coverage = Coverage(paragraphs, os.path.abspath(dir))
@@ -31,26 +38,28 @@ class DLT(object):
             if self._verbose and not coverage_isok:
                 coverage.show_msg()
             elif not coverage_isok:
-                msg = "Some files are missing copyrights"
-                print(red.format(msg))
+                self.exit_with_error("Some files are missing copyrights", red)
             if coverage_isok and self._query is not None:
-                paragraph = coverage.get_rule_associated(self._query)
-                if paragraph is not None:
-                    msg = '\n{copyright}{license}'
-                    print(msg.format(copyright=paragraph['Copyright'].content,
-                                     license=paragraph['License'].content))
+                for query in self._query:
+                    paragraph = coverage.get_rule_associated(query)
+                    if paragraph is not None:
+                        msg = '\nCopyright:{copyright}License: {license}'
+                        license = paragraph['License'].content.split('\n')[0]
+                        print(msg.format(
+                            copyright=paragraph['Copyright'].content,
+                            license=license))
         elif self._verbose:
-            self.parser.show_msg()
+            self.exit_with_error(self.parser.get_msg())
         else:
             msg = "The file contains errors or is not DEP5 compliant"
-            print(red.format(msg))
+            self.exit_with_error(msg, red)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Debian License Tool')
     parser.add_argument('path', type=str,
                        help='path to debian/copyright file')
-    parser.add_argument('--query', dest='query', action='store',
+    parser.add_argument('--query', dest='query', nargs="*",
                         help='filename that you want to know the license')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='Verbose output')
