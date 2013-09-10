@@ -4,6 +4,9 @@ dlt - Debian License Tools
 A tool set for parse and write the debian license (DEP5 compliant) quickly and
 without pain.
 
+.. image:: https://travis-ci.org/agustinhenze/dlt.png
+    :target: https://travis-ci.org/agustinhenze/dlt
+
 Get it
 ------
 

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dlt.field import Field
 
 
 class Paragraph(object):
@@ -47,10 +48,6 @@ class Paragraph(object):
             elif index is not None and index == i:
                 return field
 
-    def next(self):
-        """Paragraph instances iterable"""
-        return self
-
     def __iter__(self):
         for field in self._fields:
             yield field
@@ -64,49 +61,3 @@ class Paragraph(object):
     class NotFieldInstance(BaseException):
         """It's used when the field to add an Paragraph insance is not a Field
         instance"""
-
-
-class Field(object):
-    """Object representation of a field defined by format 1.0 of Copyright
-    machine readable"""
-    def __init__(self, name, content=None, line_number=None):
-        self.name = name
-        self.type = None
-        self._content = content
-        if not content:
-            self._content = []
-        self.line_number = line_number
-        if content and not type(content) == list:
-            self._content = [str(content)]
-
-    def add_content(self, value):
-        """Append a value to the content list"""
-        value = str(value)
-        if not self._content:
-            self._content = []
-        self._content.append(value)
-
-    @property
-    def content(self):
-        return "".join((v for v in self))
-
-    def next(self):
-        """Field instances iterable"""
-        return self
-
-    def __iter__(self):
-        for val in self._content:
-            yield val
-
-    def __len__(self):
-        return len(self._content)
-
-    def __repr__(self):
-        txt = ("Name={name} -"
-               " Type={type} -"
-               " Content={content} -"
-               " Line Number={line}")
-        return txt.format(name=self.name,
-                          type=self.type,
-                          content=repr(self._content),
-                          line=repr(self.line_number))

@@ -11,43 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import unittest
-from dlt.base import Field, Paragraph
-
-
-class ParagraphTest(unittest.TestCase):
-
-    def test_default_init(self):
-        paragraph = Paragraph()
-        self.assertEqual(len(paragraph), 0)
-
-    def test_init_one_field(self):
-        paragraph = Paragraph(Field("name", "value", 2))
-        self.assertEqual(len(paragraph), 1)
-        paragraph.add_field(Field("other name", "other value"))
-        self.assertEqual(len(paragraph), 2)
-
-    def test_init_two_field(self):
-        f1 = Field("name", "value", 2)
-        f2 = Field("other name", "other value")
-        paragraph = Paragraph(f1, f2)
-        self.assertEqual(len(paragraph), 2)
-        paragraph.add_field(Field("other name", "other value"))
-        self.assertEqual(len(paragraph), 3)
-
-    def test_init_invalid_instance(self):
-        self.assertRaises(Paragraph.NotFieldInstance, Paragraph, 2)
-
-    def test_add_invalid_instance(self):
-        paragraph = Paragraph()
-        self.assertRaises(Paragraph.NotFieldInstance,
-                          paragraph.add_field,
-                          None)
+from dlt.field import Field
 
 
 class FieldTest(unittest.TestCase):
-
     def test_field_init_without_value(self):
         field = Field("name")
         self.assertEqual(field.name, "name")
