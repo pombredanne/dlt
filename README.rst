@@ -1,6 +1,9 @@
 dlt - Debian License Tools
 ==========================
 
+This tool is no longer maintained. See https://github.com/nexB/debian-inspector 
+for an alternative.
+
 A tool set for parse and write the debian license (DEP5 compliant) quickly and
 without pain.
 
